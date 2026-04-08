@@ -67,7 +67,7 @@ export default async function AdminLieuxPage() {
                     <Link href={`/admin/lieux/${lieu.id}/modifier`}>
                       <Button variant="outline" size="sm"><Pencil className="h-4 w-4" /></Button>
                     </Link>
-                    <DeleteButton id={lieu.id} type="lieu" />
+                    <DeleteButton id={lieu.id} />
                   </td>
                 </tr>
               );
