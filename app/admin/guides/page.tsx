@@ -3,7 +3,21 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import DeleteButton from "@/components/admin/DeleteButton";
-import { Lieu } from "@prisma/client";
+
+// Définition locale du type Lieu (basée sur votre schéma Prisma)
+type Lieu = {
+  id: string;
+  nom: string;
+  region: string;
+  description: string;
+  images: string;
+  lat: number;
+  lng: number;
+  type: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdById: string;
+};
 
 async function getLieux(): Promise<Lieu[]> {
   return await prisma.lieu.findMany({
