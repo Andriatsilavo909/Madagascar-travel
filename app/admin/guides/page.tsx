@@ -4,7 +4,17 @@ import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import DeleteButton from "@/components/admin/DeleteButton";
 
-async function getGuides() {
+// Définir le type Guide (si non importé depuis Prisma)
+type Guide = {
+  id: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  circuit: string;
+  createdAt: Date;
+};
+
+async function getGuides(): Promise<Guide[]> {
   return await prisma.guide.findMany({
     orderBy: { createdAt: 'desc' }
   });
@@ -28,7 +38,7 @@ export default async function AdminGuidesPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {guides.map((guide) => (
+            {guides.map((guide: Guide) => (
               <tr key={guide.id}>
                 <td className="px-6 py-4 whitespace-nowrap">{guide.nom}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{guide.prenom}</td>
@@ -40,10 +50,11 @@ export default async function AdminGuidesPage() {
                   </Link>
                   <DeleteButton id={guide.id} type="guide" />
                 </td>
-               </tr>
+                
+              </table>
             ))}
           </tbody>
-         </table>
+        </table>
       </div>
     </div>
   );
