@@ -25,3 +25,71 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Mode sombre personnalisé */
+.dark {
+  --background: 15 15 25;
+  --foreground: 240 240 245;
+}
+
+.dark body {
+  background-color: #0f0f19;
+  color: #e4e4e7;
+}
+
+.dark .bg-white {
+  background-color: #1a1a2e;
+}
+
+.dark .bg-gray-50 {
+  background-color: #16162a;
+}
+
+.dark .border-gray-200 {
+  border-color: #2a2a40;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400 {
+  color: #a0a0b0;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-700 {
+  color: #e4e4e7;
+}
+
+.dark .shadow-lg,
+.dark .shadow-md,
+.dark .shadow-sm {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .bg-gray-100 {
+  background-color: #1e1e32;
+}
+
+.dark .bg-gray-200 {
+  background-color: #2a2a42;
+}
+
+/* Cards et conteneurs */
+.dark .bg-white\/90,
+.dark .bg-white\/95 {
+  background-color: rgba(26, 26, 46, 0.95);
+}
+
+/* Inputs et formulaires */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1e1e32;
+  border-color: #2a2a40;
+  color: #e4e4e7;
+}
+
+.dark input:focus,
+.dark textarea:focus {
+  border-color: #e74c3c;
+  ring-color: #e74c3c;
+}

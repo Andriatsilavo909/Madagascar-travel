@@ -1,24 +1,24 @@
-'use client'
-import { Users } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
-import { Home, List, PlusCircle, LogOut, BookOpen } from 'lucide-react'
+'use client';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const pathname = usePathname()
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, List, PlusCircle, Users, BookOpen, Mail, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import { UserPlus, CalendarCheck } from 'lucide-react';
 
-  const navItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/admin/lieux', label: 'Tous les lieux', icon: List },
-    { href: '/admin/lieux/ajout', label: 'Ajouter un lieu', icon: PlusCircle },
-    { href: '/admin/guides', label: 'Guides', icon: BookOpen },
-    { href: '/admin/utilisateurs', label: 'Utilisateurs', icon: Users },
-  ]
+const navItems = [
+  { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
+  { href: '/admin/lieux', label: 'Tous les lieux', icon: List },
+  { href: '/admin/lieux/ajout', label: 'Ajouter un lieu', icon: PlusCircle },
+  { href: '/admin/guides', label: 'Guides', icon: BookOpen },
+  { href: '/admin/utilisateurs', label: 'Utilisateurs', icon: Users },
+  { href: '/admin/guide-requests', label: 'Demandes guides', icon: UserPlus },
+  { href: '/admin/bookings', label: 'Réservations', icon: CalendarCheck },
+  { href: '/admin/demandes', label: 'Demandes', icon: Mail }, // ← NOUVEAU LIEN
+];
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -26,13 +26,13 @@ export default function AdminLayout({
       <aside className="w-64 bg-white shadow-md">
         <div className="p-4 border-b">
           <h2 className="text-xl font-bold text-red-600">Admin</h2>
-          <p className="text-sm text-gray-500">Gestion des lieux</p>
+          <p className="text-sm text-gray-500">Gestion du site</p>
         </div>
         <nav className="p-4">
           <ul className="space-y-2">
             {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
               return (
                 <li key={item.href}>
                   <Link
@@ -47,7 +47,7 @@ export default function AdminLayout({
                     {item.label}
                   </Link>
                 </li>
-              )
+              );
             })}
             <li>
               <button
@@ -65,5 +65,5 @@ export default function AdminLayout({
       {/* Contenu principal */}
       <main className="flex-1 p-8 overflow-y-auto">{children}</main>
     </div>
-  )
+  );
 }

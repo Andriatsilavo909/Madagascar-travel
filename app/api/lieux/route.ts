@@ -16,13 +16,14 @@ function stringifyImages(images: string[]): string {
   return JSON.stringify(images)
 }
 
-// GET : Récupérer tous les lieux (public) avec filtres optionnels
+// GET : Récupérer tous les lieux (PUBLIC) avec support multilingue
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const region = searchParams.get('region')
     const type = searchParams.get('type')
     const search = searchParams.get('search')
+    const locale = searchParams.get('locale') || 'fr' // ← AJOUTÉ
 
     const where: any = {}
     if (region) where.region = region
@@ -37,6 +38,9 @@ export async function GET(request: Request) {
     const lieux = await prisma.lieu.findMany({
       where,
       include: {
+        translations: {
+          where: { locale }  // ← AJOUTÉ - filtre les traductions
+        },
         createdBy: {
           select: { id: true, name: true, email: true }
         }
@@ -44,11 +48,24 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' }
     })
 
-    // Transformer les images JSON en tableau pour le client
-    const lieuxWithArrays = lieux.map(lieu => ({
-      ...lieu,
-      imagesArray: parseImages(lieu.images)
-    }))
+    // Transformer les données avec la traduction
+    const lieuxWithArrays = lieux.map(lieu => {
+      const translation = lieu.translations[0]
+      return {
+        id: lieu.id,
+        nom: translation?.nom || lieu.nom,
+        description: translation?.description || lieu.description,
+        images: lieu.images,
+        imagesArray: parseImages(lieu.images),
+        lat: lieu.lat,
+        lng: lieu.lng,
+        type: lieu.type,
+        region: lieu.region,
+        createdBy: lieu.createdBy,
+        createdAt: lieu.createdAt,
+        updatedAt: lieu.updatedAt,
+      }
+    })
 
     return NextResponse.json(lieuxWithArrays)
   } catch (error) {
@@ -60,7 +77,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST : Créer un nouveau lieu (admin uniquement)
+// POST : Créer un lieu (ADMIN uniquement)
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -74,7 +91,6 @@ export async function POST(request: Request) {
     const data = await request.json()
     const { nom, region, description, imagesArray, lat, lng, type } = data
 
-    // Validation basique
     if (!nom || !region || !description || !imagesArray || !lat || !lng || !type) {
       return NextResponse.json(
         { error: "Tous les champs sont requis" },
@@ -82,7 +98,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Convertir le tableau d'images en JSON pour stockage
     const imagesJson = stringifyImages(imagesArray)
 
     const newLieu = await prisma.lieu.create({
@@ -108,7 +123,7 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT : Mettre à jour un lieu existant (admin uniquement)
+// PUT : Mettre à jour un lieu (ADMIN uniquement)
 export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -131,7 +146,6 @@ export async function PUT(request: Request) {
     const data = await request.json()
     const { nom, region, description, imagesArray, lat, lng, type } = data
 
-    // Préparer les données à mettre à jour
     const updateData: any = {}
     if (nom) updateData.nom = nom
     if (region) updateData.region = region
@@ -156,7 +170,7 @@ export async function PUT(request: Request) {
   }
 }
 
-// DELETE : Supprimer un lieu (admin uniquement)
+// DELETE : Supprimer un lieu (ADMIN uniquement)
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -176,10 +190,7 @@ export async function DELETE(request: Request) {
       )
     }
 
-    await prisma.lieu.delete({
-      where: { id },
-    })
-
+    await prisma.lieu.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Erreur DELETE /api/lieux:", error)

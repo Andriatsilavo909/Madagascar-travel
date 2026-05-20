@@ -10,7 +10,7 @@ export function Footer() {
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">Madagascar Travel</h3>
             <p className="text-sm text-gray-400">
-              Votre guide complet pour découvrir les merveilles de Madagascar. 
+              Votre guide complet pour découvrir les merveilles de Madagascar.
               Des plages paradisiaques aux parcs nationaux uniques.
             </p>
             <div className="flex space-x-4 mt-4">
@@ -49,9 +49,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/a-propos" className="text-gray-400 hover:text-white">
-                  À propos
+                <Link href="/guides" className="text-gray-400 hover:text-white">
+                  nos guides
                 </Link>
+                <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+                  <Link href="/terms" className="text-gray-400 hover:text-white transition">
+                    Conditions d'utilisation
+                  </Link>
+                  <span className="text-gray-600">|</span>
+                  <Link href="/privacy" className="text-gray-400 hover:text-white transition">
+                    Politique de confidentialité
+                  </Link>
+                </div>
               </li>
             </ul>
           </div>
@@ -82,8 +91,8 @@ export function Footer() {
               Recevez nos dernières actualités et offres spéciales
             </p>
             <form className="flex flex-col gap-2">
-              <input 
-                type="email" 
+              <input
+                type="email"
                 placeholder="Votre email"
                 className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-white"
               />

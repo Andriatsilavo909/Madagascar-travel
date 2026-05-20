@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Copiez ici TOUS vos modèles du schema.prisma original
+model Lieu {
+  id          String   @id @default(cuid())
+  nom         String
+  region      String
+  description String
+  images      String
+  lat         Float
+  lng         Float
+  type        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+}
+
+model Guide {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  nom         String
+  prenom      String
+  telephone   String
+  specialite  String
+  description String?
+  status      String   @default("actif")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Ajoutez tous vos autres modèles...

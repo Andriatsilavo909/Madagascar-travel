@@ -33,7 +33,7 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.lieuxCount}</div>
             <p className="text-xs text-gray-500 mt-1">Lieux touristiques enregistrés</p>
-            <Link href="/admin/lieux" className="text-sm text-red-600 hover:underline mt-2 inline-block">
+            <Link href="/admin/guides" className="text-sm text-red-600 hover:underline mt-2 inline-block">
               Voir tous →
             </Link>
           </CardContent>
@@ -61,7 +61,7 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.guidesCount}</div>
             <p className="text-xs text-gray-500 mt-1">Guides locaux référencés</p>
-            <Link href="/admin/guides" className="text-sm text-red-600 hover:underline mt-2 inline-block">
+            <Link href="/admin/lieux" className="text-sm text-red-600 hover:underline mt-2 inline-block">
               Voir la liste →
             </Link>
           </CardContent>
