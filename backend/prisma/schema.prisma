@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String         @id @default(cuid())
+  email            String         @unique
+  name             String?
+  password         String?
+  role             Role           @default(CLIENT)
+  phone            String?
+  emailVerified    DateTime?
+  image            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  accounts         Account[]
+  bookingsAsClient Booking[]      @relation("clientBookings")
+  guide            Guide?
+  createdLieux     Lieu[]         @relation("Creator")
+  notifications    Notification[]
+  sessions         Session[]
+  favorites        Lieu[]         @relation("UserFavorites")
+}
+
+model Guide {
+  id           String            @id @default(cuid())
+  userId       String            @unique
+  telephone    String
+  status       String            @default("actif")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  email        String?
+  bookings     Booking[]
+  user         User              @relation(fields: [userId], references: [id])
+  translations GuideTraduction[]
+}
+
+model GuideTraduction {
+  id          String   @id @default(cuid())
+  guideId     String
+  locale      String
+  nom         String
+  prenom      String
+  specialite  String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  guide       Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@unique([guideId, locale])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Lieu {
+  id           String           @id @default(cuid())
+  region       String
+  images       String
+  lat          Float
+  lng          Float
+  type         String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  createdById  String
+  createdBy    User             @relation("Creator", fields: [createdById], references: [id])
+  translations LieuTraduction[]
+  favoritedBy  User[]           @relation("UserFavorites")
+}
+
+model LieuTraduction {
+  id          String   @id @default(cuid())
+  lieuId      String
+  locale      String
+  nom         String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lieu        Lieu     @relation(fields: [lieuId], references: [id], onDelete: Cascade)
+
+  @@unique([lieuId, locale])
+}
+
+model Demande {
+  id        String   @id @default(cuid())
+  nom       String
+  email     String
+  message   String
+  status    String   @default("en_attente")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  clientId    String
+  guideId     String
+  startDate   DateTime
+  endDate     DateTime
+  totalAmount Float
+  status      String   @default("en_attente")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  client      User     @relation("clientBookings", fields: [clientId], references: [id])
+  guide       Guide    @relation(fields: [guideId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+  GUIDE
+}

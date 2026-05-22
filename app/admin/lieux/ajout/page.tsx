@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 export default function AjoutLieuPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     nom: '',
     region: 'ANTANANARIVO',
@@ -44,25 +45,42 @@ export default function AjoutLieuPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+
+    // Nettoyer les URLs vides
+    const cleanImages = formData.imagesArray.filter(img => img.trim() !== '');
+
+    const payload = {
+      nom: formData.nom,
+      region: formData.region,
+      description: formData.description,
+      type: formData.type,
+      lat: parseFloat(formData.lat),
+      lng: parseFloat(formData.lng),
+      imagesArray: cleanImages,
+    };
+
+    console.log('📤 Envoi payload:', payload);
+
     try {
-      const res = await fetch('/api/lieux', {
+      const res = await fetch('http://localhost:4000/api/lieux', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nom: formData.nom,
-          region: formData.region,
-          description: formData.description,
-          type: formData.type,
-          lat: parseFloat(formData.lat),
-          lng: parseFloat(formData.lng),
-          imagesArray: formData.imagesArray.filter(img => img.trim() !== ''),
-        }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Erreur');
+
+      const data = await res.json();
+      console.log('📥 Réponse:', data);
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Erreur lors de l\'ajout');
+      }
+
       router.push('/admin/lieux');
       router.refresh();
-    } catch (error) {
-      alert('Erreur lors de l\'ajout');
+    } catch (err: any) {
+      console.error('❌ Erreur:', err);
+      setError(err.message || 'Erreur lors de l\'ajout du lieu');
     } finally {
       setIsLoading(false);
     }
@@ -88,6 +106,13 @@ export default function AjoutLieuPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Ajouter un lieu</h1>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          ❌ {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow">
         <div>
           <Label htmlFor="nom">Nom *</Label>
@@ -134,11 +159,11 @@ export default function AjoutLieuPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="lat">Latitude *</Label>
-            <Input id="lat" name="lat" type="number" step="any" value={formData.lat} onChange={handleChange} required />
+            <Input id="lat" name="lat" type="number" step="any" value={formData.lat} onChange={handleChange} required placeholder="-18.9237" />
           </div>
           <div>
             <Label htmlFor="lng">Longitude *</Label>
-            <Input id="lng" name="lng" type="number" step="any" value={formData.lng} onChange={handleChange} required />
+            <Input id="lng" name="lng" type="number" step="any" value={formData.lng} onChange={handleChange} required placeholder="47.5327" />
           </div>
         </div>
         
@@ -161,13 +186,13 @@ export default function AjoutLieuPage() {
             </div>
           ))}
           <Button type="button" variant="outline" size="sm" onClick={addImageField}>
-            Ajouter une image
+            + Ajouter une image
           </Button>
         </div>
         
         <div className="flex gap-4 pt-4">
           <Button type="submit" disabled={isLoading} className="bg-red-600 hover:bg-red-700">
-            {isLoading ? 'Création...' : 'Créer le lieu'}
+            {isLoading ? 'Ajout en cours...' : 'Ajouter le lieu'}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Annuler
