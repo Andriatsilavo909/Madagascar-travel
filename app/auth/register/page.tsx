@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Mail, Lock, Eye, EyeOff, User, Phone, MapPin, Briefcase, GraduationCap, Languages, Award, Calendar } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, User, Phone, MapPin, Briefcase, GraduationCap, Languages, Award } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -92,7 +92,8 @@ export default function RegisterPage() {
     setApiError('')
 
     try {
-      const response = await fetch('/api/auth/register', {
+      // Appel direct au backend Express sur le port 4000
+      const response = await fetch('http://localhost:4000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

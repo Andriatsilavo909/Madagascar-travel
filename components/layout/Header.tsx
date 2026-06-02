@@ -74,7 +74,7 @@ export function Header() {
                 );
               })}
 
-              {isAuthenticated && (
+              {/* {isAuthenticated && (
                 <Link
                   href="/demander-guide"
                   className="group px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 transition-all duration-300"
@@ -85,7 +85,7 @@ export function Header() {
                   </div>
                   <div className="w-0 h-0.5 bg-red-500 transition-all duration-300 group-hover:w-full" />
                 </Link>
-              )}
+              )} */}
 
               {isAdmin && (
                 <Link

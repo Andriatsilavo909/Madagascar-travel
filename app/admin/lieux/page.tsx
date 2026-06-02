@@ -22,8 +22,8 @@ export default function AdminLieuxPage() {
 
   const fetchLieux = async () => {
     try {
-      // Utilise l'API route Next.js au lieu du backend Express
-      const res = await fetch('/api/lieux');
+      // Appel au backend Express sur le port 4000
+      const res = await fetch('http://localhost:4000/api/lieux');
       if (!res.ok) throw new Error('Erreur de chargement');
       const data = await res.json();
       setLieux(data);
@@ -42,7 +42,7 @@ export default function AdminLieuxPage() {
   const handleDelete = async (id: string, nom: string) => {
     if (!confirm(`Supprimer le lieu "${nom}" ?`)) return;
     try {
-      const res = await fetch(`/api/lieux/${id}`, { method: 'DELETE' });
+      const res = await fetch(`http://localhost:4000/api/lieux/${id}`, { method: 'DELETE' });
       if (res.ok) fetchLieux();
       else alert('Erreur lors de la suppression');
     } catch (error) {
@@ -68,22 +68,27 @@ export default function AdminLieuxPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th>Image</th><th>Nom</th><th>Région</th><th>Type</th><th>Créé par</th><th>Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Région</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Créé par</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {lieux.map((lieu) => (
               <tr key={lieu.id}>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 whitespace-nowrap">
                   {lieu.imagesArray?.[0] ? (
                     <img src={lieu.imagesArray[0]} alt={lieu.nom} className="h-10 w-10 object-cover rounded" />
                   ) : <div className="h-10 w-10 bg-gray-200 rounded" />}
                 </td>
-                <td className="px-6 py-4 font-medium">{lieu.nom}</td>
-                <td className="px-6 py-4">{lieu.region}</td>
-                <td className="px-6 py-4">{lieu.type}</td>
-                <td className="px-6 py-4">{lieu.createdBy?.name || '-'}</td>
-                <td className="px-6 py-4 text-right space-x-2">
+                <td className="px-6 py-4 whitespace-nowrap font-medium">{lieu.nom}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{lieu.region}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{lieu.type}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{lieu.createdBy?.name || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
                   <Link href={`/admin/lieux/${lieu.id}/modifier`}>
                     <Button variant="outline" size="sm"><Pencil className="h-4 w-4" /></Button>
                   </Link>

@@ -21,21 +21,22 @@ model User {
 model Guide {
   id          String   @id @default(cuid())
   userId      String
-  nom         String   // ← ce champ existe
-  prenom      String   // ← ce champ existe
-  telephone   String   // ← ce champ existe
+  nom         String
+  prenom      String
+  telephone   String
   email       String?
-  adresse     String?
-  circuit     String?
+  adresse     String?   // ← AJOUTE CETTE LIGNE
+  circuit     String?   // ← AJOUTE CETTE LIGNE
   langues     String?
   diplomes    String?
   experience  String?
-  specialite  String?  // note: specialite (singulier) ou specialites
+  specialites String?
   description String?
   status      String   @default("actif")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
 model Lieu {
   id          String   @id @default(cuid())
   nom         String

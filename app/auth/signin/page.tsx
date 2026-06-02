@@ -33,12 +33,12 @@ export default function SignInPage() {
         redirect: false,
       })
 
-      console.log('Résultat complet:', result)
+      console.log('Résultat:', result)
 
       if (result?.error) {
-        setError(`Email ou mot de passe incorrect`)
+        setError('Email ou mot de passe incorrect')
       } else if (result?.ok) {
-        console.log('Connexion réussie, récupération de la session...')
+        console.log('Connexion réussie')
         
         const session = await getSession()
         if (session?.user?.role === 'ADMIN') {
@@ -49,7 +49,7 @@ export default function SignInPage() {
         router.refresh()
       }
     } catch (err) {
-      console.error('Exception:', err)
+      console.error('Erreur:', err)
       setError('Une erreur est survenue')
     } finally {
       setLoading(false)
@@ -84,7 +84,7 @@ export default function SignInPage() {
           <p className="text-gray-500 mt-2">Connectez-vous à votre compte</p>
         </div>
 
-        {/* Error message with animation */}
+        {/* Error message */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl animate-shake">
             {error}
