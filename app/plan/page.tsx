@@ -1,14 +1,15 @@
-import { prisma } from '@/lib/db/prisma'
-import { parseImages } from '@/types/lieu'
 import { Suspense } from 'react'
 import DynamicMap from '@/components/map/DynamicMap'
 
 async function getAllLieux() {
-  const lieux = await prisma.lieu.findMany()
-  return lieux.map(lieu => ({
-    ...lieu,
-    imagesArray: parseImages(lieu.images)
-  }))
+  try {
+    const res = await fetch('http://localhost:4000/api/lieux', { cache: 'no-store' })
+    if (!res.ok) return []
+    return await res.json()
+  } catch (error) {
+    console.error('Erreur chargement lieux:', error)
+    return []
+  }
 }
 
 export default async function PlanPage() {
@@ -27,7 +28,6 @@ export default async function PlanPage() {
         </Suspense>
       </div>
 
-      {/* Légende des types de lieux */}
       <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-red-600 rounded-full"></div>

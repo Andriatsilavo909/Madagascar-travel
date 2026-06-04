@@ -24,7 +24,7 @@ async function getStats() {
 }
 
 const regions = [
-  { id: 'ANTANANARIVO', name: 'Antananarivo', image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&h=400&fit=crop', description: 'Capitale des hautes terres' },
+  { id: 'ANTANANARIVO', name: 'Antananarivo', image: 'https://2424.mg/wp-content/uploads/2025/08/analakely_.webp' },
   { id: 'TOAMASINA', name: 'Toamasina', image: 'https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?w=600&h=400&fit=crop', description: 'Port de l\'est' },
   { id: 'MAHAJANGA', name: 'Mahajanga', image: 'https://images.unsplash.com/photo-1590523278191-9edc9a3edfe3?w=600&h=400&fit=crop', description: 'Ville des baobabs' },
   { id: 'FIANARANTSOA', name: 'Fianarantsoa', image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&h=400&fit=crop', description: 'Route du vin' },

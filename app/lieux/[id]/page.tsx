@@ -1,41 +1,47 @@
-import { prisma } from "@/lib/db/prisma"
 import { notFound } from "next/navigation"
-import { parseImages, RegionLabels, TypeLieuLabels } from "@/types/lieu"
 import { Button } from "@/components/ui/button"
 import { MapPin, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
-// Interface pour typer les props (Next.js 15+ utilise des Promises)
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Récupérer les données du lieu par son ID
+const RegionLabels: Record<string, string> = {
+  ANTANANARIVO: 'Antananarivo',
+  TOAMASINA: 'Toamasina',
+  MAHAJANGA: 'Mahajanga',
+  FIANARANTSOA: 'Fianarantsoa',
+  ANTSIRANANA: 'Antsiranana',
+  TOLIARA: 'Toliara',
+}
+
+const TypeLieuLabels: Record<string, string> = {
+  CULTUREL: 'Site Culturel',
+  PARC: 'Parc National',
+  PLAGE: 'Plage',
+  MONTAGNE: 'Montagne',
+  VILLE: 'Ville',
+}
+
 async function getLieu(id: string) {
   try {
-    const lieu = await prisma.lieu.findUnique({
-      where: { id }
+    const res = await fetch(`http://localhost:4000/api/lieux/${id}`, {
+      cache: 'no-store',
     })
-    if (!lieu) return null
-    // Ajouter le tableau d'images
-    return {
-      ...lieu,
-      imagesArray: parseImages(lieu.images)
-    }
+    if (!res.ok) return null
+    return await res.json()
   } catch (error) {
     console.error("Erreur lors de la récupération du lieu:", error)
     return null
   }
 }
 
-// Métadonnées dynamiques pour le SEO
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params
   const lieu = await getLieu(id)
-  if (!lieu) {
-    return { title: "Lieu non trouvé" }
-  }
+  if (!lieu) return { title: "Lieu non trouvé" }
   return {
     title: `${lieu.nom} - Madagascar Travel`,
     description: lieu.description.substring(0, 160)
@@ -46,9 +52,7 @@ export default async function LieuDetailPage({ params }: PageProps) {
   const { id } = await params
   const lieu = await getLieu(id)
 
-  if (!lieu) {
-    notFound()
-  }
+  if (!lieu) notFound()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -81,11 +85,11 @@ export default async function LieuDetailPage({ params }: PageProps) {
         <div className="absolute bottom-8 left-4 md:bottom-16 md:left-16 text-white">
           <div className="flex items-center gap-2 mb-2">
             <span className="bg-red-600 px-3 py-1 rounded-full text-sm">
-              {TypeLieuLabels[lieu.type as keyof typeof TypeLieuLabels]}
+              {TypeLieuLabels[lieu.type] ?? lieu.type}
             </span>
             <span className="bg-blue-600 px-3 py-1 rounded-full text-sm flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
-              {RegionLabels[lieu.region as keyof typeof RegionLabels]}
+              {RegionLabels[lieu.region] ?? lieu.region}
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-2">{lieu.nom}</h1>
@@ -98,7 +102,7 @@ export default async function LieuDetailPage({ params }: PageProps) {
       {/* Contenu principal */}
       <div className="container py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Colonne principale - Description */}
+          {/* Colonne principale */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
               <h2 className="text-2xl font-bold mb-4">À propos de ce lieu</h2>
@@ -106,16 +110,16 @@ export default async function LieuDetailPage({ params }: PageProps) {
                 {lieu.description}
               </p>
 
-              {/* Galerie d'images supplémentaires */}
+              {/* Galerie */}
               {lieu.imagesArray && lieu.imagesArray.length > 1 && (
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold mb-4">Galerie photos</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {lieu.imagesArray.slice(1).map((img, index) => (
+                    {lieu.imagesArray.slice(1).map((img: string, index: number) => (
                       <div key={index} className="relative h-32 rounded-lg overflow-hidden">
                         <Image
                           src={img}
-                          alt={`${lieu.nom} - ${index + 2}`}
+                          alt={`${lieu.nom} photo ${index + 2}`}
                           fill
                           className="object-cover hover:scale-110 transition duration-300"
                         />
@@ -127,22 +131,19 @@ export default async function LieuDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Colonne latérale - Informations pratiques */}
+          {/* Colonne latérale */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
               <h3 className="text-lg font-semibold mb-4">Informations</h3>
-
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-500">Région</p>
-                  <p className="font-medium">{RegionLabels[lieu.region as keyof typeof RegionLabels]}</p>
+                  <p className="font-medium">{RegionLabels[lieu.region] ?? lieu.region}</p>
                 </div>
-
                 <div>
                   <p className="text-sm text-gray-500">Type</p>
-                  <p className="font-medium">{TypeLieuLabels[lieu.type as keyof typeof TypeLieuLabels]}</p>
+                  <p className="font-medium">{TypeLieuLabels[lieu.type] ?? lieu.type}</p>
                 </div>
-
                 <div>
                   <p className="text-sm text-gray-500">Coordonnées GPS</p>
                   <p className="font-medium">{lieu.lat}° N, {lieu.lng}° E</p>
@@ -169,7 +170,6 @@ export default async function LieuDetailPage({ params }: PageProps) {
                   </Button>
                 </div>
 
-                {/* Mini carte (simulée) */}
                 <div className="mt-4 h-48 bg-gray-200 rounded-lg overflow-hidden relative">
                   <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600">
                     Carte interactive bientôt disponible

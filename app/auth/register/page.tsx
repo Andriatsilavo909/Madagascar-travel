@@ -123,7 +123,14 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Erreur lors de l\'inscription')
       }
 
-      router.push('/auth/signin?registered=true')
+      // Redirection selon le rôle retourné par l'API
+      if (data.role === 'ADMIN') {
+        router.push('/admin/dashboard')
+      } else if (data.role === 'GUIDE') {
+        router.push('/guide/dashboard')
+      } else {
+        router.push('/auth/signin?registered=true')
+      }
     } catch (error: any) {
       setApiError(error.message)
     } finally {

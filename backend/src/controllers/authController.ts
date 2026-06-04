@@ -7,9 +7,10 @@ const prisma = new PrismaClient();
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, phone, role } = req.body;
+    const { email, password, name, phone, role, adminKey } = req.body;
     
-    console.log('📝 Tentative inscription:', { email, name });
+    console.log('📝 Tentative inscription:', { email, name, role, adminKey });
+    console.log('🔑 ADMIN_SECRET_KEY défini:', !!process.env.ADMIN_SECRET_KEY);
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, mot de passe et nom requis' });
@@ -20,29 +21,36 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Cet email est déjà utilisé' });
     }
 
-    // Hachage du mot de passe
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    
-    console.log('🔐 Mot de passe haché avec succès');
+
+    // Détermination du rôle
+    let assignedRole = 'CLIENT';
+    if (adminKey && adminKey === process.env.ADMIN_SECRET_KEY) {
+      assignedRole = 'ADMIN';
+    } else if (role === 'GUIDE') {
+      assignedRole = 'GUIDE';
+    }
+
+    console.log('👑 Rôle attribué:', assignedRole);
 
     const user = await prisma.user.create({
-      data: { 
-        email, 
-        password: hashedPassword, 
-        name, 
+      data: {
+        email,
+        password: hashedPassword,
+        name,
         phone: phone || null,
-        role: role || 'CLIENT' 
+        role: assignedRole,
       }
     });
-    
-    console.log('✅ Utilisateur créé:', user.id);
-    
-    res.status(201).json({ 
-      message: 'Utilisateur créé', 
-      user: { id: user.id, email: user.email, name: user.name, role: user.role } 
+
+    console.log('✅ Utilisateur créé:', user.id, 'avec rôle:', user.role);
+
+    res.status(201).json({
+      message: 'Utilisateur créé',
+      user: { id: user.id, email: user.email, name: user.name, role: user.role }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erreur inscription:', error);
     res.status(500).json({ error: 'Erreur lors de l\'inscription: ' + error.message });
   }
@@ -64,27 +72,27 @@ export const login = async (req: Request, res: Response) => {
       console.log('❌ Utilisateur non trouvé');
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
-    
+
     const isValid = await bcrypt.compare(password, user.password);
     console.log('🔑 Mot de passe valide:', isValid);
-    
+
     if (!isValid) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
-    
+
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role }, 
-      process.env.JWT_SECRET || 'secret', 
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'secret',
       { expiresIn: '7d' }
     );
-    
-    console.log('✅ Connexion réussie:', email);
-    
-    res.json({ 
-      token, 
-      user: { id: user.id, email: user.email, name: user.name, role: user.role } 
+
+    console.log('✅ Connexion réussie:', email, '| Rôle:', user.role);
+
+    res.json({
+      token,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erreur connexion:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }

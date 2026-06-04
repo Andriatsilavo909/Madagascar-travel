@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
-import { Menu, X, Map, Home, Compass, Hotel, User } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Menu, X, Map, Home, Compass, Hotel, User, ChevronDown, Plus, BookOpen } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import Logo from "@/components/Logo";
 import { Sidebar } from "@/components/Sidebar";
 
@@ -11,11 +11,11 @@ export function Header() {
   const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const guideRef = useRef<HTMLDivElement>(null);
   
   const isLoading = status === "loading";
   const isAdmin = session?.user?.role === "ADMIN";
-  const isGuide = session?.user?.role === "GUIDE";
-  const isAuthenticated = !!session;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -23,17 +23,26 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (guideRef.current && !guideRef.current.contains(e.target as Node)) {
+        setGuideOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const navItems = [
     { href: "/", label: "Accueil", icon: Home },
     { href: "/plan", label: "Carte", icon: Map },
     { href: "/lieux", label: "Lieux", icon: Compass },
-    { href: "/guides", label: "Guides", icon: User },
     { href: "/hotels", label: "Hôtels", icon: Hotel },
   ];
 
   return (
     <>
-      {/* Top bar - informations de contact */}
+      {/* Top bar */}
       <div className="hidden md:block bg-gradient-to-r from-red-600 to-green-600 text-white text-xs py-2">
         <div className="w-full max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-6">
@@ -52,7 +61,6 @@ export function Header() {
       <header className={`sticky top-0 z-40 w-full transition-all duration-300 bg-white border-b border-gray-100 ${scrolled ? 'shadow-md py-2' : 'py-3'}`}>
         <div className="w-full max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <Logo />
 
             {/* Navigation desktop */}
@@ -60,11 +68,8 @@ export function Header() {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="group px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 transition-all duration-300"
-                  >
+                  <Link key={item.href} href={item.href}
+                    className="group px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 transition-all duration-300">
                     <div className="flex items-center gap-2">
                       <Icon className="h-4 w-4" />
                       <span className="font-medium text-sm">{item.label}</span>
@@ -74,24 +79,55 @@ export function Header() {
                 );
               })}
 
-              {/* {isAuthenticated && (
-                <Link
-                  href="/demander-guide"
-                  className="group px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 transition-all duration-300"
-                >
+              {/* Dropdown Guides */}
+              <div ref={guideRef} className="relative">
+                <button onClick={() => setGuideOpen(!guideOpen)}
+                  className="group px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 transition-all duration-300">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    <span className="font-medium text-sm">Demander un guide</span>
+                    <span className="font-medium text-sm">Guides</span>
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${guideOpen ? 'rotate-180' : ''}`} />
                   </div>
-                  <div className="w-0 h-0.5 bg-red-500 transition-all duration-300 group-hover:w-full" />
-                </Link>
-              )} */}
+                  <div className={`h-0.5 bg-red-500 transition-all duration-300 ${guideOpen ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                </button>
 
+                {guideOpen && (
+                  <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-white rounded-xl border border-gray-100 shadow-lg p-1.5 w-52 z-50">
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-gray-100 rotate-45" />
+
+                    {/* Voir les guides */}
+                    <Link href="/guides" onClick={() => setGuideOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-green-50 group/item transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center group-hover/item:bg-green-200 transition-colors flex-shrink-0">
+                        <BookOpen className="h-4 w-4 text-green-700" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-800">Voir les guides</p>
+                        <p className="text-xs text-gray-400">Explorer tous les guides</p>
+                      </div>
+                    </Link>
+
+                    <div className="h-px bg-gray-100 my-1 mx-1" />
+
+                    {/* Créer un guide — public */}
+                    <Link href="/devenir-guide" onClick={() => setGuideOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 group/item transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center group-hover/item:bg-red-200 transition-colors flex-shrink-0">
+                        <Plus className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-800">Créer un guide</p>
+                        <p className="text-xs text-gray-400">Publier votre expertise</p>
+                      </div>
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Lien Admin */}
               {isAdmin && (
-                <Link
-                  href="/admin/dashboard"
-                  className="group px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 transition-all duration-300"
-                >
+                <Link href="/admin/dashboard"
+                  className="group px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 transition-all duration-300">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     <span className="font-medium text-sm">Admin</span>
@@ -103,7 +139,6 @@ export function Header() {
 
             {/* Boutons droits */}
             <div className="flex items-center gap-3">
-              {/* Boutons auth (uniquement si non connecté) */}
               {!isLoading && !session && (
                 <div className="flex items-center gap-2">
                   <Link href="/auth/signin">
@@ -119,11 +154,9 @@ export function Header() {
                 </div>
               )}
 
-              {/* Menu mobile */}
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center"
-              >
+              {/* Menu mobile toggle */}
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="lg:hidden w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center">
                 {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </button>
             </div>
@@ -136,37 +169,34 @@ export function Header() {
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition"
-                >
+                <Link key={item.href} href={item.href} onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition">
                   <Icon className="h-5 w-5 text-gray-500" />
                   <span className="text-gray-700 font-medium">{item.label}</span>
                 </Link>
               );
             })}
-            {isAuthenticated && (
-              <Link
-                href="/demander-guide"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition"
-              >
-                <User className="h-5 w-5 text-gray-500" />
-                <span className="text-gray-700 font-medium">Demander un guide</span>
-              </Link>
-            )}
+
+            {/* Guides mobile */}
+            <Link href="/guides" onClick={() => setIsMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-green-50 transition">
+              <BookOpen className="h-5 w-5 text-green-600" />
+              <span className="text-gray-700 font-medium">Voir les guides</span>
+            </Link>
+            <Link href="/devenir-guide" onClick={() => setIsMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition">
+              <Plus className="h-5 w-5 text-red-500" />
+              <span className="text-gray-700 font-medium">Créer un guide</span>
+            </Link>
+
             {isAdmin && (
-              <Link
-                href="/admin/dashboard"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition"
-              >
+              <Link href="/admin/dashboard" onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition">
                 <User className="h-5 w-5 text-gray-500" />
                 <span className="text-gray-700 font-medium">Admin</span>
               </Link>
             )}
+
             {!session && (
               <div className="pt-4 border-t mt-4">
                 <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
@@ -181,7 +211,6 @@ export function Header() {
         </div>
       </header>
 
-      {/* Sidebar latérale (uniquement quand connecté) */}
       {session && <Sidebar />}
     </>
   );
