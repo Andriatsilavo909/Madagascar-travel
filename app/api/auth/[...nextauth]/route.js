@@ -1,8 +1,14 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import GoogleProvider from "next-auth/providers/google"
 
 export const authOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -19,9 +25,7 @@ export const authOptions = {
               password: credentials?.password,
             }),
           })
-
           const data = await res.json()
-
           if (res.ok && data.user) {
             return {
               id: data.user.id,
@@ -37,14 +41,45 @@ export const authOptions = {
       }
     })
   ],
+
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        try {
+          const res = await fetch("http://localhost:4000/api/auth/google", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: user.email,
+              name: user.name,
+              googleId: user.id,
+            }),
+          })
+          const data = await res.json()
+          if (res.ok && data.user) {
+            user.role = data.user.role
+            user.id = data.user.id
+          }
+          return true
+        } catch (error) {
+          console.error("Erreur Google signIn:", error)
+          return true
+        }
+      }
+      return true
+    },
+
+    async jwt({ token, user, account }) {
       if (user) {
-        token.role = user.role
+        token.role = user.role || "CLIENT"
         token.id = user.id
+      }
+      if (account?.provider === "google" && !token.role) {
+        token.role = "CLIENT"
       }
       return token
     },
+
     async session({ session, token }) {
       if (session.user) {
         session.user.role = token.role
@@ -53,6 +88,7 @@ export const authOptions = {
       return session
     }
   },
+
   pages: {
     signIn: "/auth/signin",
   },
