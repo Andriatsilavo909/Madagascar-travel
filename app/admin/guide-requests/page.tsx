@@ -1,24 +1,47 @@
-import { prisma } from "@/lib/db/prisma";
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
-import { revalidatePath } from "next/cache";
 
-async function getPendingGuides() {
-  return await prisma.guide.findMany({
-    where: { status: "en_attente" },
-    orderBy: { createdAt: 'desc' },
-    include: { user: { select: { name: true, email: true } } }
-  });
+interface Guide {
+  id: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email: string;
+  specialite: string;
+  status: string;
 }
 
-async function updateGuideStatus(id: string, status: 'approuve' | 'refuse') {
-  'use server';
-  await prisma.guide.update({ where: { id }, data: { status } });
-  revalidatePath('/admin/guide-requests');
-}
+export default function AdminGuideRequestsPage() {
+  const [guides, setGuides] = useState<Guide[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function AdminGuideRequestsPage() {
-  const guides = await getPendingGuides();
+  const fetchGuides = async () => {
+    try {
+      const res = await fetch('http://localhost:4000/api/guides');
+      const data = await res.json();
+      setGuides(data.filter((g: Guide) => g.status === 'en_attente'));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchGuides(); }, []);
+
+  const updateStatus = async (id: string, status: string) => {
+    await fetch(`http://localhost:4000/api/guides/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    fetchGuides();
+  };
+
+  if (loading) return <div className="text-center py-12">Chargement...</div>;
 
   return (
     <div>
@@ -35,7 +58,6 @@ export default async function AdminGuideRequestsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Téléphone</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Spécialité</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Demandeur</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
@@ -45,16 +67,15 @@ export default async function AdminGuideRequestsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">{guide.nom}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{guide.prenom}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{guide.telephone}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{guide.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{guide.email || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{guide.specialite}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{guide.user.name} ({guide.user.email})</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                    <form action={async () => { 'use server'; await updateGuideStatus(guide.id, 'approuve'); }}>
-                      <Button variant="outline" size="sm" type="submit"><Check className="h-4 w-4 text-green-600" /></Button>
-                    </form>
-                    <form action={async () => { 'use server'; await updateGuideStatus(guide.id, 'refuse'); }}>
-                      <Button variant="outline" size="sm" type="submit"><X className="h-4 w-4 text-red-600" /></Button>
-                    </form>
+                    <Button variant="outline" size="sm" onClick={() => updateStatus(guide.id, 'approuve')}>
+                      <Check className="h-4 w-4 text-green-600" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => updateStatus(guide.id, 'refuse')}>
+                      <X className="h-4 w-4 text-red-600" />
+                    </Button>
                   </td>
                 </tr>
               ))}
