@@ -28,7 +28,7 @@ export default function DemanderGuideList() {
         if (!res.ok) throw new Error('Erreur lors du chargement');
         const data = await res.json();
         setGuides(data);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
