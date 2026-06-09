@@ -22,7 +22,7 @@ export default async function RegionPage({ params }: PageProps) {
     <div className="container py-12">
       <h1 className="text-4xl font-bold mb-8 capitalize">{region.replace(/_/g, " ")}</h1>
       {lieux.length === 0 ? (
-        <p className="text-gray-500">Aucun lieu disponible pour cette région.</p>
+        <p className="text-gray-500">Aucun lieu disponible pour cette rÃ©gion.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lieux.map((lieu: any) => (
@@ -39,7 +39,7 @@ export default async function RegionPage({ params }: PageProps) {
                 </div>
                 <p className="text-gray-600 text-sm line-clamp-2 mb-4">{lieu.description}</p>
                 <Link href={`/lieux/${lieu.id}`}>
-                  <Button className="w-full bg-red-600 hover:bg-red-700">Voir détails</Button>
+                  <Button className="w-full bg-red-600 hover:bg-red-700">Voir details</Button>
                 </Link>
               </div>
             </div>
