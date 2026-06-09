@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
 
 export async function GET(request: Request) {
   try {
@@ -10,21 +9,10 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const lieux = await prisma.lieu.findMany({
-      where: {
-        OR: [
-          { nom: { contains: query } },
-          { description: { contains: query } },
-          { region: { contains: query } },
-        ],
-      },
-      take: 10,
-      select: { id: true, nom: true, region: true, type: true, images: true },
-    });
-
-    return NextResponse.json(lieux);
-  } catch (error) {
-    console.error("Erreur search API:", error);
-    return NextResponse.json({ error: "Erreur lors de la recherche" }, { status: 500 });
+    const res = await fetch(`http://localhost:4000/api/lieux?search=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    return NextResponse.json(data.slice(0, 10));
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
