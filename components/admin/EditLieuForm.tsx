@@ -36,7 +36,7 @@ export default function EditLieuForm({ lieu }: { lieu: any }) {
 
   const removeImageField = (index: number) => {
     if (formData.imagesArray.length > 1) {
-      const newImages = formData.imagesArray.filter((_, i) => i !== index);
+      const newImages = formData.imagesArray.filter((_: any, i) => i !== index);
       setFormData({ ...formData, imagesArray: newImages });
     }
   };
